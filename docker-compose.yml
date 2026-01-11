@@ -1,0 +1,31 @@
+services:
+  sbsync:
+    build:
+      context: .
+    image: sbsync:latest
+    container_name: sbsync
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      # `.env`의 TARGET_DIR 값을 그대로 사용
+      TARGET_DIR: ${TARGET_DIR:-/vault}
+      METRICS_PORT: ${METRICS_PORT:-8000}
+      DEBOUNCE_SECONDS: ${DEBOUNCE_SECONDS:-300}
+      USE_POLLING: ${USE_POLLING:-false}
+      # Default to the mounted ssh key path inside the container, unless overridden in `.env`
+      SSH_KEY_PATH: /root/.ssh/id_ed25519
+      # Optional: make git/ssh a bit more predictable inside container
+      HOME: /root
+    volumes:
+      # Obsidian Vault (host -> container)
+      # - TARGET_DIR이 "호스트 경로"이자 "컨테이너 내부 경로"로 동일하게 사용됩니다.
+      #   예) TARGET_DIR=/Users/me/Vault  ->  /Users/me/Vault:/Users/me/Vault
+      - ${TARGET_DIR:-./vault}:${TARGET_DIR:-/vault}
+      # SSH private key for git (host -> container, read-only)
+      # Avoid mounting the entire ~/.ssh directory because macOS ssh config can include
+      # unsupported options (e.g., UseKeychain) on Debian OpenSSH.
+      - ${SSH_KEY_HOST_PATH:-${HOME}/.ssh/id_ed25519}:/root/.ssh/id_ed25519:ro
+    ports:
+      - "${METRICS_PORT:-8000}:${METRICS_PORT:-8000}"

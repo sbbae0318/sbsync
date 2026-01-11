@@ -1,12 +1,28 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "sbsync"
 version = "0.1.0"
-description = "Add your description here"
+description = "Obsidian vault git syncing utility"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
 dependencies = [
     "gitpython>=3.1.46",
     "prometheus-client>=0.23.1",
     "python-dotenv>=1.2.1",
     "watchdog>=6.0.0",
 ]
+
+[project.scripts]
+sbsync = "src.main:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.4.3",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

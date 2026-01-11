@@ -27,7 +27,7 @@ class Debouncer:
 
         self.timer = Timer(self.interval, self.callback)
         self.timer.start()
-        logger.info(f"Debounce timer started. Waiting {self.interval}s...")
+        logger.debug("Debounce timer started. Waiting %ss...", self.interval)
 
     def cancel(self):
         if self.timer is not None:

@@ -1,8 +1,6 @@
 FROM python:3.11-slim-bookworm
 
-# Install git and uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
-
+# Install git and ssh client
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     openssh-client \
@@ -10,22 +8,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+# Install uv (avoid GHCR pull which may require macOS keychain interaction)
+RUN pip install --no-cache-dir "uv>=0.7.0"
+
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
 
 # Copy project files
 COPY pyproject.toml .
-# COPY uv.lock . # Lock file might not exist yet if just init'd, but good practice
+COPY uv.lock .
 
 # Install dependencies
-RUN uv sync --frozen --no-install-project || uv sync --no-install-project
+RUN uv sync --frozen --no-install-project
 
 # Copy source code
 COPY src/ src/
+COPY docker/ docker/
 
 # Environment variables
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app"
 
 # Entrypoint
-CMD ["python", "src/main.py"]
+RUN chmod +x docker/entrypoint.sh
+CMD ["docker/entrypoint.sh"]

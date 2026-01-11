@@ -9,3 +9,12 @@ wheels/
 # Virtual environments
 .venv
 .env
+ 
+# IDE settings
+.vscode/
+
+# Local vault mount (docker-compose default)
+vault/
+
+# Docker config without macOS keychain (local-only)
+.docker-nokeychain/

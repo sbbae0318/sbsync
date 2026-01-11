@@ -6,7 +6,15 @@
 - **File Monitoring**: `watchdog` 라이브러리를 사용하여 지정된 디렉토리(`TARGET_DIR`)의 파일 변경을 실시간 감지.
 - **Debounced Sync**: 변경 감지 후 즉시 동작하지 않고, 설정된 `DEBOUNCE_SECONDS` (기본 300초) 동안 추가 변경이 없을 때 Git Sync 수행.
 - **Git Integration**: `GitPython`을 사용하여 `git add`, `git commit`, `git push` 자동화. `.gitignore`에 정의된 파일은 자동으로 제외됨 (Vault 설정 준수).
+- **Initial Sync Attempt on Startup**: 프로세스 시작 시 1회, best-effort로 원격 반영을 시도한 뒤(woking tree가 깨끗하고 upstream이 있을 때 `pull --rebase`), 로컬 변경이 있으면 커밋/푸시 수행.
 - **Environment Management**: `uv` 패키지 매니저 사용. Docker 배포 시에도 `uv`를 활용하여 빠른 빌드 지원.
+
+### 1.4 Recent Changes (2026-01)
+- **docker-compose 지원**: `restart: unless-stopped`로 재부팅/재시작 시 자동 복구.
+- **Docker build 안정화(맥)**: Keychain 비대화형 이슈로 레지스트리 pull이 막힐 수 있어, 필요 시 `DOCKER_CONFIG` 분리로 우회 가능.
+- **SSH 안정화**:
+  - macOS `~/.ssh/config`의 `UseKeychain` 옵션이 컨테이너(OpenSSH)에서 실패할 수 있어 키 파일만 마운트.
+  - clone 시점부터 `GIT_SSH_COMMAND` 적용(Host key verification/프롬프트 회피).
 
 ### 1.2 Security
 - **Sensitive Data**: `.env` 파일을 통해 중요 정보(Git URL, User Info 등) 관리.
@@ -24,7 +32,8 @@
 
 1. **Git Conflict Resolution**:
     - 현재 로직은 `check changes -> add -> commit -> push`의 단순한 단방향 흐름입니다.
-    - Remote에 다른 변경사항이 있어 Push가 거부될 경우(Rejection), 현재 로직은 실패 로그를 남기고 `errors_total`을 증가시킨 뒤 종료됩니다. (자동 Pull/Merge 안 함)
+    - Remote에 다른 변경사항이 있어 Push가 거부될 경우(Rejection), 현재 로직은 실패 로그를 남기고 `errors_total`을 증가시킵니다.
+    - 시작 시점에 working tree가 깨끗하고 upstream이 있을 때는 `pull --rebase`를 best-effort로 시도하지만, 자동 머지/충돌 해결은 하지 않습니다.
     - **Mitigation**: 업무용 PC는 Read-only라서 충돌 가능성이 낮으나, Personal PC에서 다른 작업이 병행되면 충돌 가능.
 
 2. **Race Conditions**:

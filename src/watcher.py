@@ -1,6 +1,6 @@
 from watchdog.events import FileSystemEventHandler
-from .utils import logger
-from .metrics import FILES_CHANGED_TOTAL
+from src.utils import logger
+from src.metrics import FILES_CHANGED_TOTAL
 
 
 class VaultEventHandler(FileSystemEventHandler):
@@ -19,6 +19,6 @@ class VaultEventHandler(FileSystemEventHandler):
         # but Obsidian vaults can contain arbitrary attachments.
         # We rely on .gitignore in the Vault for exclusion.
 
-        logger.info(f"✨ Detected event: {event.event_type} on {event.src_path}")
+        logger.debug("Detected event: %s on %s", event.event_type, event.src_path)
         FILES_CHANGED_TOTAL.inc()
         self.on_change_callback()

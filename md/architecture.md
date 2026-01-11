@@ -35,6 +35,7 @@ graph LR
 - **Watcher**: Monitors file system events using `watchdog`.
 - **Debouncer**: Aggregates rapid changes to prevent excessive commits (default 5 min).
 - **Git Handler**: Executes `git add`, `commit`, `push` using `GitPython`.
+- **Startup Initial Sync**: On process start, sbSync attempts a best-effort initial sync (e.g., `pull --rebase` when safe) before starting the watcher loop.
 - **Metrics**: Exposes Prometheus metrics on port 8000.
 
 ### 3.2 Data Separation
