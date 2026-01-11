@@ -13,7 +13,9 @@ services:
       TARGET_DIR: ${TARGET_DIR:-/vault}
       METRICS_PORT: ${METRICS_PORT:-8000}
       DEBOUNCE_SECONDS: ${DEBOUNCE_SECONDS:-300}
-      USE_POLLING: ${USE_POLLING:-false}
+      # Docker(macOS/WSL/가상화/네트워크 마운트)에서는 inotify 이벤트 누락이 흔해
+      # 기본값을 polling으로 둡니다. 필요하면 .env에서 USE_POLLING=false로 override 하세요.
+      USE_POLLING: ${USE_POLLING:-true}
       # Default to the mounted ssh key path inside the container, unless overridden in `.env`
       SSH_KEY_PATH: /root/.ssh/id_ed25519
       # Optional: make git/ssh a bit more predictable inside container

@@ -55,6 +55,8 @@ uv run python -m src.main
 - `GIT_REMOTE_URL`, `SSH_KEY_PATH` 등 기존 설정은 그대로 사용합니다.
 - docker-compose에서는 `TARGET_DIR`을 **호스트 절대 경로로 설정**하고, 해당 경로를 컨테이너에도 **동일 경로로 bind mount**합니다.
   - 예: `TARGET_DIR=/Users/sbbae/project/sbsync` 이면 컨테이너도 `/Users/sbbae/project/sbsync` 를 감시/clone/pull 합니다.
+ - Docker(macOS/WSL)에서는 파일 이벤트(inotify)가 누락될 수 있어 **기본은 polling**입니다.
+   - 필요 시 `.env`에 `USE_POLLING=false`로 바꾸면 inotify(기본 Observer)로 시도합니다.
  - `SSH_KEY_PATH`는 컨테이너 내부 경로(`/root/.ssh/...`)여야 합니다. docker-compose 사용 시에는 `/root/.ssh/id_ed25519`로 고정해서 사용합니다.
  - macOS의 `~/.ssh/config`에는 `UseKeychain` 같은 옵션이 들어갈 수 있는데, 리눅스 컨테이너(OpenSSH)가 이를 이해 못해 실패할 수 있습니다. 그래서 compose는 `~/.ssh` 전체가 아니라 **키 파일만 마운트**합니다.
  - 호스트 키 경로를 바꾸고 싶으면 `SSH_KEY_HOST_PATH=/path/to/id_ed25519`를 설정하세요.

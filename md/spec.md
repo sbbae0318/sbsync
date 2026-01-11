@@ -22,6 +22,7 @@
 | `TARGET_DIR` | `/vault` | Directory to monitor (Docker에서는 호스트 경로를 그대로 마운트해도 됨) |
 | `DEBOUNCE_SECONDS` | `300` | Wait time before syncing |
 | `METRICS_PORT` | `8000` | Prometheus metrics port |
+| `USE_POLLING` | `false` | File watcher mode. Docker(macOS/WSL)에서는 `true` 권장(=PollingObserver) |
 
 ## 4. Technical Stack
 - **Language**: Python 3.11+

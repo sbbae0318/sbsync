@@ -15,6 +15,8 @@
 - **SSH 안정화**:
   - macOS `~/.ssh/config`의 `UseKeychain` 옵션이 컨테이너(OpenSSH)에서 실패할 수 있어 키 파일만 마운트.
   - clone 시점부터 `GIT_SSH_COMMAND` 적용(Host key verification/프롬프트 회피).
+- **Watcher 안정화(Docker)**:
+  - Docker(macOS/WSL/가상화 마운트)에서 inotify 이벤트 누락이 있어 기본은 polling(`USE_POLLING=true`) 권장.
 
 ### 1.2 Security
 - **Sensitive Data**: `.env` 파일을 통해 중요 정보(Git URL, User Info 등) 관리.
