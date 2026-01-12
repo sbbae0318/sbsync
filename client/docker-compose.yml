@@ -1,0 +1,28 @@
+services:
+  sbsync-client:
+    build:
+      context: .
+    image: sbsync-client:latest
+    container_name: sbsync-client
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      # `.env`の TARGET_DIR 値を그대로 사용
+      TARGET_DIR: ${TARGET_DIR:-/vault}
+      METRICS_PORT: ${METRICS_PORT:-8001}
+      PULL_INTERVAL_MINUTES: ${PULL_INTERVAL_MINUTES:-5}
+      # Default to the mounted ssh key path inside the container, unless overridden in `.env`
+      SSH_KEY_PATH: /root/.ssh/id_ed25519
+      # Optional: make git/ssh a bit more predictable inside container
+      HOME: /root
+    volumes:
+      # Obsidian Vault (host -> container)
+      # - TARGET_DIR이 "호스트 경로"이자 "컨테이너 내부 경로"로 동일하게 사용됩니다.
+      #   예) TARGET_DIR=/Users/me/Vault  ->  /Users/me/Vault:/Users/me/Vault
+      - ${TARGET_DIR:-./vault}:${TARGET_DIR:-/vault}
+      # SSH private key for git (host -> container, read-only)
+      - ${SSH_KEY_HOST_PATH:-${HOME}/.ssh/id_ed25519}:/root/.ssh/id_ed25519:ro
+    ports:
+      - "${METRICS_PORT:-8001}:${METRICS_PORT:-8001}"
