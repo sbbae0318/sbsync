@@ -1,7 +1,9 @@
-# System Architecture
+# System Architecture - Client (Pull Client)
 
 ## 1. Overview
 sbSync Client automates the read-only synchronization of an Obsidian Vault from a Git Remote to a work environment, discarding any local changes.
+
+This is the **client** component of the sbsync suite. See the [server component](../../server/md/architecture.md) for the push client used on personal PCs.
 
 ## 2. Component Diagram
 
@@ -24,12 +26,12 @@ graph LR
 
     subgraph Personal PC
         PersonalClient["Obsidian Client"]
-        sbSync["sbSync (Push)"]
+        sbSyncServer["sbSync Server (Push)"]
     end
 
     GitRemote -- "Pull (Read Only)" --> Git
-    sbSync -- "Push" --> GitRemote
-    PersonalClient -- "Edit" --> sbSync
+    sbSyncServer -- "Push" --> GitRemote
+    PersonalClient -- "Edit" --> sbSyncServer
 ```
 
 ## 3. Core Components
@@ -50,11 +52,12 @@ graph LR
 - No sensitive data is stored in the Docker image.
 - SSH keys are handled with proper permissions (0600).
 
-## 4. Comparison with sbSync
+## 4. Comparison with sbSync Server
 
-| Feature | sbSync | sbSync Client |
-|---------|--------|---------------|
+| Feature | sbSync Server | sbSync Client |
+|---------|---------------|---------------|
 | Direction | Personal PC → Remote | Remote → Work PC |
 | Operation | Watch + Commit + Push | Scheduled Pull |
 | Local Changes | Preserved and committed | Discarded (clean/checkout) |
 | Use Case | Content creation | Read-only consumption |
+| Location | `server/` directory | `client/` directory |

@@ -1,7 +1,9 @@
-# System Architecture
+# System Architecture - Server (Push Client)
 
 ## 1. Overview
-sbSync automates the synchronization of an Obsidian Vault between a personal PC and a Git Remote, enabling secure data transfer to network-restricted work environments.
+sbSync Server automates the synchronization of an Obsidian Vault from a personal PC to a Git Remote by watching for file changes and automatically pushing them.
+
+This is the **server** component of the sbsync suite. See the [client component](../../client/md/architecture.md) for the read-only pull client used on work PCs.
 
 ## 2. Component Diagram
 
@@ -22,16 +24,18 @@ graph LR
     end
     
     subgraph Work PC
-        WorkClient["Obsidian Client"]
+        ClientApp["sbSync Client"]
+        WorkVault["Obsidian Vault (Read-Only)"]
     end
 
     Git -- "Push" --> GitRemote
-    GitRemote -- "Pull (Read Only)" --> WorkClient
+    GitRemote -- "Pull (Read Only)" --> ClientApp
+    ClientApp --> WorkVault
 ```
 
 ## 3. Core Components
 
-### 3.1 sbSync App (Python)
+### 3.1 sbSync Server (Python)
 - **Watcher**: Monitors file system events using `watchdog`.
 - **Debouncer**: Aggregates rapid changes to prevent excessive commits (default 5 min).
 - **Git Handler**: Executes `git add`, `commit`, `push` using `GitPython`.

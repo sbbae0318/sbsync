@@ -1,4 +1,6 @@
-# System Specifications
+# System Specifications - Server (Push Client)
+
+> This document describes the **server** component that watches for changes and pushes to remote. For the pull client, see [client specifications](../../client/md/spec.md).
 
 ## 1. File Monitoring
 - **Trigger**: File system events (Create, Modify, Delete, Move).

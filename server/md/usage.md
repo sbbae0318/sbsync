@@ -1,4 +1,6 @@
-# sbSync Usage Guide
+# sbSync Server Usage Guide
+
+> This is the **server** (push client) usage guide. For the client (pull client), see [client usage guide](../../client/md/usage.md).
 
 ## 1. Prerequisites
 - **Python 3.11+**
@@ -12,7 +14,7 @@
 ```bash
 # Clone repository
 git clone <repo_url>
-cd sbsync
+cd sbsync/server
 
 # Initialize environment and install dependencies
 uv sync
@@ -49,7 +51,23 @@ uv run python -m src.main
 
 ## 3. Docker Deployment
 
-### docker-compose (추천)
+### Unified docker-compose (추천)
+
+From the root directory, you can run both server and client:
+
+```bash
+cd sbsync  # root directory
+cp .env.example .env
+vi .env  # Edit with SERVER_* and CLIENT_* variables
+
+# Run server only
+docker-compose up -d sbsync-server
+
+# Or run both server and client
+docker-compose up -d
+```
+
+### Standalone server docker-compose
 
 1) `.env` 설정 (git에 커밋되지 않음)
 - `GIT_REMOTE_URL`, `SSH_KEY_PATH` 등 기존 설정은 그대로 사용합니다.
@@ -64,6 +82,7 @@ uv run python -m src.main
 2) 실행 (재부팅 후 자동 재시작)
 
 ```bash
+cd sbsync/server
 docker-compose up -d --build
 ```
 
@@ -92,10 +111,11 @@ docker context use default
 docker info
 ```
 
-### Docker 리소스 “전부 정리”(컨테이너/이미지/볼륨)
+### Docker 리소스 "전부 정리"(컨테이너/이미지/볼륨)
 레포에 포함된 스크립트로 **모든 컨테이너 삭제 + 미사용 이미지/볼륨/캐시 정리**를 한 번에 할 수 있습니다.
 
 ```bash
+cd sbsync  # root directory
 ./scripts/docker_nuke.sh --yes
 ```
 

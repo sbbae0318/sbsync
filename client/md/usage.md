@@ -1,5 +1,7 @@
 # sbSync Client Usage Guide
 
+> This is the **client** (pull client) usage guide. For the server (push client), see [server usage guide](../../server/md/usage.md).
+
 ## 1. Prerequisites
 - **Python 3.11+**
 - **uv** (Package Manager)
@@ -12,7 +14,7 @@
 ```bash
 # Clone repository
 git clone <repo_url>
-cd sbsync-client
+cd sbsync/client
 
 # Initialize environment and install dependencies
 uv sync
@@ -49,7 +51,23 @@ uv run python -m src.main
 
 ## 3. Docker Deployment
 
-### docker-compose (추천)
+### Unified docker-compose (추천)
+
+From the root directory, you can run both server and client:
+
+```bash
+cd sbsync  # root directory
+cp .env.example .env
+vi .env  # Edit with SERVER_* and CLIENT_* variables
+
+# Run client only
+docker-compose up -d sbsync-client
+
+# Or run both server and client
+docker-compose up -d
+```
+
+### Standalone client docker-compose
 
 1) `.env` 설정
 - `GIT_REMOTE_URL`, `SSH_KEY_PATH` 등 설정은 그대로 사용합니다.
@@ -61,6 +79,7 @@ uv run python -m src.main
 2) 실행 (재부팅 후 자동 재시작)
 
 ```bash
+cd sbsync/client
 docker-compose up -d --build
 ```
 

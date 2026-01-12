@@ -1,4 +1,6 @@
-# System Specifications
+# System Specifications - Client (Pull Client)
+
+> This document describes the **client** component that periodically pulls from remote. For the push server, see [server specifications](../../server/md/spec.md).
 
 ## 1. Pull Operations
 - **Trigger**: Periodic schedule based on configurable interval.
