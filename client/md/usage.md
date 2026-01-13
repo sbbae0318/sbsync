@@ -47,7 +47,7 @@ uv run python -m src.main
 - sbSync Client는 **시작 시점에 1회** sync를 호출하여 최신 상태로 업데이트합니다.
 - remote가 설정되어 있고 대상 디렉토리에 `.git`이 없으며 **디렉토리가 비어있으면**, 초기 실행에서 **clone으로 부트스트랩**합니다.
 - 이후부터는 설정된 interval마다 주기적으로 pull합니다.
-- **중요**: 로컬 변경사항은 항상 폐기됩니다 (`git clean -fd && git checkout .`).
+- **중요**: 로컬 변경사항(tracked files)은 항상 폐기됩니다. Untracked files는 remote와 충돌하는 경우에만 삭제됩니다.
 
 ## 3. Docker Deployment
 
@@ -121,4 +121,4 @@ Metrics are available at `http://localhost:8001/`.
 
 ### Conflict Resolution
 - 항상 remote의 상태를 따라가므로 conflict가 발생하지 않습니다.
-- `git clean -fd && git checkout .`로 working directory를 항상 clean 상태로 유지합니다.
+- `git checkout .`로 tracked files를 reset하고, 충돌하는 untracked files만 선별적으로 제거하여 conflict를 방지합니다.

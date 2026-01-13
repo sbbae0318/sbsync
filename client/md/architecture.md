@@ -38,7 +38,7 @@ graph LR
 
 ### 3.1 sbSync Client (Python)
 - **Scheduler**: Triggers periodic pull operations using `schedule` library.
-- **Git Handler**: Executes `git clean -fd`, `git checkout .`, `git pull` using `GitPython`.
+- **Git Handler**: Executes smart clean (conflicting untracked files only), `git checkout .`, and `git pull` using `GitPython`.
 - **Startup Initial Sync**: On process start, performs initial pull to get latest state.
 - **Metrics**: Exposes Prometheus metrics on port 8001.
 

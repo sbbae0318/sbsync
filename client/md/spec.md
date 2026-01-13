@@ -5,10 +5,11 @@
 ## 1. Pull Operations
 - **Trigger**: Periodic schedule based on configurable interval.
 - **Operations**:
-  1. `git clean -fd`: Remove untracked files and directories.
-  2. `git checkout .`: Discard all local changes.
-  3. `git pull`: Pull latest changes from remote.
-- **Safety**: Always clean and checkout before pull to ensure clean state.
+  1. `git fetch`: Fetch latest state from remote.
+  2. **Smart Clean**: Remove only untracked files that conflict with the incoming remote state.
+  3. `git checkout .`: Discard all local changes to tracked files.
+  4. `git pull`: Pull latest changes from remote.
+- **Safety**: Ensures no conflicts prevent pull, while preserving non-conflicting untracked files.
 
 ## 2. Synchronization Logic
 - **Mechanism**: Remote -> Work PC 방향의 자동 pull.
@@ -16,7 +17,7 @@
   - 시작 시점에 1회 sync를 호출하여 최신 상태로 업데이트.
   - remote가 설정되어 있고 `.git`이 없으며 디렉토리가 비어있으면, clone으로 초기화.
 - **Periodic Sync**: Configurable interval (default 5 minutes).
-- **Clean Working Directory**: 항상 clean/checkout 후 pull하여 로컬 변경사항을 무시.
+- **Clean Working Directory**: 항상 Smart Clean/Checkout 후 pull하여 로컬 변경사항을 무시 (충돌하는 Untracked file만 제거).
 
 ## 3. Configuration
 | Variable | Default | Description |

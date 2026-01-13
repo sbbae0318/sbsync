@@ -81,6 +81,40 @@ class GitHandler:
             ERRORS_TOTAL.inc()
             return None
 
+    def _smart_clean(self, remote_branch_name):
+        """
+        Removes untracked files that conflict with the remote branch.
+        """
+        try:
+            # Get list of files in remote branch
+            remote_files_output = self.repo.git.ls_tree("-r", "--name-only", remote_branch_name)
+            remote_files = set(remote_files_output.splitlines()) if remote_files_output else set()
+
+            # Get list of untracked files
+            untracked_files_output = self.repo.git.ls_files("--others", "--exclude-standard")
+            untracked_files = set(untracked_files_output.splitlines()) if untracked_files_output else set()
+
+            # Find intersection
+            conflicting_files = remote_files.intersection(untracked_files)
+
+            if conflicting_files:
+                logger.info("Found %d conflicting untracked files. Removing...", len(conflicting_files))
+                for file_path in conflicting_files:
+                    full_path = os.path.join(self.repo_path, file_path)
+                    try:
+                        if os.path.exists(full_path):
+                            os.remove(full_path)
+                            logger.info("Removed conflicting file: %s", file_path)
+                    except OSError as e:
+                        logger.error("Failed to remove %s: %s", file_path, e)
+            else:
+                logger.info("No conflicting untracked files found.")
+
+            return True
+        except Exception as e:
+            logger.error("Smart clean failed: %s", e)
+            return False
+
     def clean_and_checkout(self):
         """
         Clean the working directory and checkout to discard all local changes.
@@ -114,43 +148,60 @@ class GitHandler:
     def pull(self):
         """
         Pull the latest changes from the remote repository.
-        First performs clean and checkout to ensure a clean state.
+        Performs smart clean (conflicting files only) and checkout.
         """
         if not self.repo:
             logger.error("Repository not initialized")
             return False
 
         try:
-            # First, ensure clean working directory
-            if not self.clean_and_checkout():
-                logger.error("Failed to clean working directory before pull")
-                return False
+            # 1. Fetch first to know the state of remote
+            logger.info("Fetching from remote...")
+            origin = self.repo.remote(name="origin")
+            origin.fetch()
 
-            # Check if we have a tracking branch
+            # 2. Configure/Get Tracking Branch
+            branch_name = "main" # Default fallback
             try:
                 branch = self.repo.active_branch
                 tracking = branch.tracking_branch()
-                if tracking is None:
+                if tracking:
+                    # tracking is a RemoteReference, e.g. origin/main
+                    # We need the name 'origin/main'
+                    remote_ref = tracking.name
+                else:
                     # Try to set up tracking with origin/main or origin/master
                     logger.info("No upstream configured, attempting to set tracking branch...")
-                    origin = self.repo.remote(name="origin")
-                    origin.fetch()
-
+                    
                     # Try main first, then master
-                    for branch_name in ["main", "master"]:
+                    for candidate in ["main", "master"]:
                         try:
-                            self.repo.git.checkout(branch_name)
-                            self.repo.git.branch(f"--set-upstream-to=origin/{branch_name}", branch_name)
-                            logger.info("Set tracking branch to origin/%s", branch_name)
+                            # We already fetched, so we can check if origin/candidate exists
+                            # But checkout/branch logic from before is fine
+                            self.repo.git.checkout(candidate)
+                            self.repo.git.branch(f"--set-upstream-to=origin/{candidate}", candidate)
+                            logger.info("Set tracking branch to origin/%s", candidate)
+                            remote_ref = f"origin/{candidate}"
+                            branch_name = candidate
                             break
                         except git.exc.GitCommandError:
                             continue
+                    else:
+                         # Fallback if detection fails (shouldn't happen if repo exists)
+                         remote_ref = "origin/main"
             except Exception as e:
                 logger.warning("Could not configure tracking branch: %s", e)
+                remote_ref = "origin/main"
 
-            # Pull from remote
+            # 3. Smart Clean: Remove only conflicting untracked files
+            self._smart_clean(remote_ref)
+
+            # 4. Discard all local changes to tracked files (Remote wins)
+            logger.info("Running git checkout .")
+            self.repo.git.checkout(".")
+            
+            # 5. Pull (Merge)
             logger.info("Pulling latest changes from remote...")
-            origin = self.repo.remote(name="origin")
             origin.pull()
             logger.info("Pull successful")
 
