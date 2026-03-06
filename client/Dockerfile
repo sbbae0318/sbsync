@@ -24,10 +24,10 @@ RUN uv sync --no-install-project
 COPY src/ src/
 COPY docker/ docker/
 
+# Fix Windows CRLF line endings and make entrypoint executable
+RUN sed -i 's/\r$//' docker/entrypoint.sh && chmod +x docker/entrypoint.sh
+
 # Environment variables
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app"
-
-# Entrypoint
-RUN chmod +x docker/entrypoint.sh
 CMD ["docker/entrypoint.sh"]
