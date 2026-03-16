@@ -5,8 +5,9 @@ from watchdog.observers import Observer as DefaultObserver
 from watchdog.observers.polling import PollingObserver
 
 from src.config import config
+from src.health import MountHealthChecker
 from src.metrics import start_metrics_server
-from src.utils import logger, Debouncer
+from src.utils import logger, Debouncer, PeriodicTimer
 from src.git_handler import GitHandler
 from src.watcher import VaultEventHandler
 
@@ -37,6 +38,17 @@ def main():
     # This checks for changes and commits/pushes
     debouncer = Debouncer(config.DEBOUNCE_SECONDS, git_handler.sync)
 
+    # 4.1 Setup Periodic Sync Timer
+    def _safe_sync():
+        try:
+            git_handler.sync()
+        except Exception:
+            logger.exception("Periodic sync failed, will retry next interval")
+
+    periodic_timer = PeriodicTimer(config.PERIODIC_SYNC_SECONDS, _safe_sync)
+    periodic_timer.start()
+    logger.info("Periodic sync every %ss", config.PERIODIC_SYNC_SECONDS)
+
     # 5. Setup Watcher
     event_handler = VaultEventHandler(on_change_callback=debouncer.call)
 
@@ -61,14 +73,30 @@ def main():
         logger.info("Shutting down...")
         observer.stop()
         debouncer.cancel()
+        periodic_timer.cancel()
         sys.exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
+    # 7. Health Check Loop (replaces idle sleep loop)
+    health_checker = MountHealthChecker(config.TARGET_DIR)
+    check_interval = config.HEALTH_CHECK_SECONDS
+    elapsed = 0
     try:
         while True:
             time.sleep(1)
+            elapsed += 1
+            if elapsed >= check_interval:
+                if not health_checker.check():
+                    logger.critical(
+                        "Mount is stale! Exiting for container recreation."
+                    )
+                    observer.stop()
+                    debouncer.cancel()
+                    periodic_timer.cancel()
+                    sys.exit(1)
+                elapsed = 0
     except KeyboardInterrupt:
         observer.stop()
 

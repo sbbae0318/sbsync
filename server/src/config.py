@@ -17,6 +17,12 @@ class Config:
         # Debounce time in seconds
         self.DEBOUNCE_SECONDS = int(os.getenv("DEBOUNCE_SECONDS", "300"))
 
+        # Periodic sync interval in seconds
+        self.PERIODIC_SYNC_SECONDS = int(os.getenv("PERIODIC_SYNC_SECONDS", "600"))
+
+        # Health check interval in seconds
+        self.HEALTH_CHECK_SECONDS = int(os.getenv("HEALTH_CHECK_SECONDS", "60"))
+
         # Prometheus metrics port
         self.METRICS_PORT = int(os.getenv("METRICS_PORT", "8000"))
 
