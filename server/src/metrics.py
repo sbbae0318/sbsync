@@ -10,6 +10,7 @@ LAST_SYNC_TIMESTAMP = Gauge(
 FILES_CHANGED_TOTAL = Counter(
     "sbsync_files_changed_total", "Total number of file change events detected"
 )
+HEALTH_STATUS = Gauge("sbsync_health_status", "Mount health status (1=healthy, 0=unhealthy)")
 
 
 def start_metrics_server(port):
